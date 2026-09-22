@@ -1,12 +1,8 @@
+import time
+
 import pytest
 
-from assignment import (
-    find_all_positions,
-    find_student_by_id,
-    binary_search_steps,
-    find_insert_position,
-    first_and_last_position,
-)
+from assignment import find_closest, integer_sqrt, find_missing
 
 
 class CountingList(list):
@@ -36,112 +32,69 @@ class CountingList(list):
         return super().count(value)
 
 
-# --- Exercise 1: All positions of a value (linear search) ---
+DATA = [2, 5, 8, 12, 16, 23, 38, 56, 72, 91]
+
+
+
 @pytest.mark.parametrize(
     "data, target, expected",
     [
-        [[4, 2, 4, 9, 4], 4, [0, 2, 4]],
-        [[10, 20, 30], 20, [1]],
-        [[10, 20, 30], 99, []],
-        [[], 1, []],
-        [["a", "b", "a", "c"], "a", [0, 2]],
-        [[7, 7, 7, 7], 7, [0, 1, 2, 3]],
+        [DATA, 13, 12],    
+        [DATA, 14, 12],    
+        [DATA, 30, 23], 
+        [DATA, 31, 38],     
+        [DATA, 23, 23],    
+        [DATA, 1, 2],     
+        [DATA, 100, 91], 
+        [DATA, 2, 2],     
+        [DATA, 91, 91],   
+        [[7], 100, 7],      
+        [[10, 20], 15, 10],
     ]
 )
 def test1(data, target, expected):
-    assert find_all_positions(data, target) == expected
+    assert find_closest(data, target) == expected
 
 
-# --- Exercise 2: Look up a student record (linear search) ---
-RECORDS = [
-    [101, "Bat", 78],
-    [205, "Saraa", 91],
-    [144, "Tuguldur", 65],
-    [317, "Anu", 88],
-]
-
-
-@pytest.mark.parametrize(
-    "records, student_id, expected",
-    [
-        [RECORDS, 101, "Bat"],
-        [RECORDS, 317, "Anu"],
-        [RECORDS, 144, "Tuguldur"],
-        [RECORDS, 999, None],
-        [[], 101, None],
-    ]
-)
-def test2(records, student_id, expected):
-    assert find_student_by_id(records, student_id) == expected
-
-
-# --- Exercise 3: Binary search that also counts its steps ---
-@pytest.mark.parametrize(
-    "data, target, expected",
-    [
-        [[1, 3, 5, 7, 9, 11, 13, 15], 7, [3, 1]],
-        [[1, 3, 5, 7, 9, 11, 13, 15], 1, [0, 3]],
-        [[1, 3, 5, 7, 9, 11, 13, 15], 15, [7, 4]],
-        [[1, 3, 5, 7, 9, 11, 13, 15], 8, [-1, 3]],
-        [[5], 5, [0, 1]],
-        [[5], 2, [-1, 1]],
-        [[], 5, [-1, 0]],
-    ]
-)
-def test3(data, target, expected):
-    assert binary_search_steps(data, target) == expected
-
-
-# --- Exercise 4: Where should this value be inserted? (binary search) ---
-@pytest.mark.parametrize(
-    "data, value, expected",
-    [
-        [[10, 20, 30, 40], 25, 2],
-        [[10, 20, 30, 40], 10, 0],
-        [[10, 20, 30, 40], 40, 3],
-        [[10, 20, 30, 40], 50, 4],
-        [[10, 20, 30, 40], 5, 0],
-        [[1, 2, 2, 2, 3], 2, 1],
-        [[], 7, 0],
-    ]
-)
-def test4(data, value, expected):
-    assert find_insert_position(data, value) == expected
-
-
-def test4_efficiency():
-    # 100,000 even numbers: 0, 2, 4, ... 199998
-    data = CountingList(range(0, 200000, 2))
-    assert find_insert_position(data, 123457) == 61729
+def test1_efficiency():
+    data = CountingList(range(0, 400000, 4))  
+    assert find_closest(data, 123457) == 123456
     checked = data.accesses
     assert checked < 200, (
-        "Too many elements checked (%d). Exercise 4 must use binary search."
+        "Too many elements checked (%d). Exercise 1 must use binary search."
         % checked
     )
 
 
-# --- Exercise 5: First and last position of a value (binary search) ---
+# --- Exercise 2: Integer square root ---
 @pytest.mark.parametrize(
-    "data, target, expected",
+    "n, expected",
     [
-        [[1, 2, 2, 2, 3, 4], 2, [1, 3]],
-        [[5, 5, 5, 5], 5, [0, 3]],
-        [[1, 2, 3, 4], 4, [3, 3]],
-        [[1, 2, 3, 4], 1, [0, 0]],
-        [[1, 2, 3], 4, [-1, -1]],
-        [[1, 3, 5], 4, [-1, -1]],
-        [[], 1, [-1, -1]],
+        [0, 0],
+        [1, 1],
+        [2, 1],
+        [3, 1],
+        [4, 2],
+        [8, 2],
+        [9, 3],
+        [15, 3],
+        [16, 4],
+        [24, 4],
+        [25, 5],
+        [100, 10],
+        [999, 31],
+        [1000000, 1000],
     ]
 )
-def test5(data, target, expected):
-    assert first_and_last_position(data, target) == expected
+def test2(n, expected):
+    assert integer_sqrt(n) == expected
 
 
-def test5_efficiency():
-    data = CountingList([1] * 50000 + [2] * 50000)
-    assert first_and_last_position(data, 2) == [50000, 99999]
-    checked = data.accesses
-    assert checked < 200, (
-        "Too many elements checked (%d). Exercise 5 must use binary search."
-        % checked
+def test2_efficiency():
+    start = time.time()
+    assert integer_sqrt(10000000000000000) == 100000000
+    elapsed = time.time() - start
+    assert elapsed < 1.0, (
+        "Took %.1f seconds. Exercise 2 must use binary search, not a loop "
+        "that counts upwards." % elapsed
     )
