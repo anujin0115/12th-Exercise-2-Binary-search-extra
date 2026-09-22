@@ -1,5 +1,8 @@
 # Binary Search 2
 
+
+PDF: https://drive.google.com/file/d/14bB72Mvr2QaOCf2f6r3CLbhEHWTM7GuC/view?usp=sharing
+
 - Every exercise must use **binary search**.
   
 ---
